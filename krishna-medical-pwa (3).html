@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Krishna Medical">
+<title>Krishna Medical Store</title>
+<link rel="manifest" id="mf">
+<style>
+:root{
+  --p:#0f766e;--pl:#14b8a6;--pd:#0d5c55;
+  --green:#10b981;--red:#ef4444;--amber:#f59e0b;
+  --bg:#f0fdf9;--card:#fff;--t1:#0f172a;--t2:#64748b;
+  --bdr:#d1fae5;--nav:64px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+html,body{height:100%;overflow:hidden;background:#000}
+#app{height:100%;max-width:430px;margin:0 auto;background:#fff;position:relative;display:flex;flex-direction:column;overflow:hidden}
+
+/* PAGES */
+.page{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;transform:translateX(100%);transition:transform 0.3s cubic-bezier(.4,0,.2,1);z-index:1}
+.page.active{transform:translateX(0);z-index:2}
+.page.prev{transform:translateX(-30%)}
+.page-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav) + 16px)}
+.page-body::-webkit-scrollbar{display:none}
+
+/* HOME stays at base */
+#pg-home{transform:translateX(0);z-index:1}
+#pg-home.active{z-index:2}
+
+/* TOP BAR */
+.topbar{background:linear-gradient(135deg,var(--p),var(--pl));color:#fff;padding:52px 16px 18px;position:relative;overflow:hidden;flex-shrink:0}
+.topbar::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(255,255,255,0.07);border-radius:50%}
+.topbar-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-box{width:38px;height:38px;background:rgba(255,255,255,0.2);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.logo-name{font-size:16px;font-weight:800}
+.logo-sub{font-size:10px;opacity:.8}
+.call-btn{background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.35);color:#fff;padding:8px 16px;border-radius:22px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;text-decoration:none}
+.call-btn:active{transform:scale(.95)}
+
+/* SEARCH */
+.search-wrap{position:relative}
+.search-input{width:100%;padding:13px 16px 13px 46px;border:none;border-radius:16px;font-size:14px;outline:none;background:rgba(255,255,255,.97);color:var(--t1);box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.search-input::placeholder{color:#94a3b8}
+.s-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:17px;pointer-events:none}
+.sugg-box{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.15);z-index:100;overflow:hidden;display:none}
+.sugg-box.on{display:block}
+.sugg-row{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;border-bottom:1px solid #f8f8f8}
+.sugg-row:last-child{border:none}
+.sugg-row:active{background:#f0fdf9}
+.sugg-em{font-size:22px;width:32px;text-align:center}
+.sugg-nm{font-size:13px;font-weight:600;color:var(--t1)}
+.sugg-br{font-size:11px;color:var(--t2)}
+.sugg-pr{font-size:13px;font-weight:700;color:var(--p);margin-left:auto;white-space:nowrap}
+
+/* BACK HEADER */
+.back-header{background:linear-gradient(135deg,var(--p),var(--pl));color:#fff;padding:52px 16px 18px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.back-btn{width:36px;height:36px;background:rgba(255,255,255,.2);border:none;border-radius:50%;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.back-btn:active{transform:scale(.9)}
+.back-title{font-size:17px;font-weight:800}
+.back-sub{font-size:11px;opacity:.8;margin-top:1px}
+
+/* BOTTOM NAV */
+.bottom-nav{height:var(--nav);background:#fff;border-top:1px solid #f0f0f0;display:flex;flex-shrink:0;box-shadow:0 -4px 20px rgba(0,0,0,.06)}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:#94a3b8;padding:4px 0;transition:color .2s;position:relative}
+.nav-btn.on{color:var(--p)}
+.nav-ic{font-size:22px;line-height:1}
+.nav-lb{font-size:10px;font-weight:600}
+
+/* SECTIONS */
+.sec{padding:16px 16px 0}
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-size:15px;font-weight:800;color:var(--t1)}
+.sec-link{font-size:12px;font-weight:700;color:var(--p);cursor:pointer}
+
+/* INSTALL BANNER */
+.inst-banner{margin:16px;background:linear-gradient(135deg,var(--pd),var(--p));border-radius:18px;padding:14px 16px;color:#fff;display:flex;align-items:center;gap:12px;cursor:pointer;active:transform:scale(.98)}
+.inst-banner:active{transform:scale(.98)}
+.inst-ic{font-size:28px;flex-shrink:0}
+.inst-title{font-size:13px;font-weight:700}
+.inst-sub{font-size:11px;opacity:.8;margin-top:1px}
+.inst-action{background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:7px 14px;border-radius:12px;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap;cursor:pointer;border-style:solid}
+
+/* CAT MINI GRID */
+.cat-mini{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cat-mini-item{background:#fff;border:1px solid #f0f0f0;border-radius:14px;padding:12px 6px;text-align:center;cursor:pointer;transition:all .2s}
+.cat-mini-item:active{transform:scale(.93)}
+.cat-mini-em{font-size:26px;margin-bottom:4px}
+.cat-mini-lb{font-size:10px;font-weight:700;color:var(--t2)}
+
+/* MED CARDS */
+.med-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px 16px}
+.med-card{background:#fff;border-radius:18px;border:1.5px solid #f0f0f0;overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.med-card:active{transform:scale(.97)}
+.med-img{height:110px;display:flex;align-items:center;justify-content:center;font-size:52px;position:relative;background:linear-gradient(135deg,#f0fdf9,#d1fae5)}
+.badge-off{position:absolute;top:8px;left:8px;background:var(--p);color:#fff;font-size:9px;font-weight:800;padding:3px 8px;border-radius:8px}
+.badge-rx{position:absolute;top:8px;right:8px;background:#1e293b;color:#fff;font-size:8px;font-weight:700;padding:3px 6px;border-radius:6px}
+.med-body{padding:10px}
+.med-brand{font-size:9px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+.med-name{font-size:13px;font-weight:700;color:var(--t1);line-height:1.3;margin:2px 0 6px}
+.sok{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.slow{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.sout{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:3px 8px;border-radius:8px;background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.med-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid #f8f8f8}
+.med-price{font-size:15px;font-weight:800;color:var(--p)}
+.med-mrp{font-size:10px;color:#cbd5e1;text-decoration:line-through;margin-left:3px}
+.btn-cart{width:30px;height:30px;border-radius:50%;background:var(--p);color:#fff;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-cart:active{transform:scale(.85)}
+.btn-bell{width:30px;height:30px;border-radius:50%;background:#f8fafc;color:#94a3b8;border:1.5px solid #e2e8f0;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* CATEGORIES PAGE */
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.cat-card{background:#fff;border-radius:18px;padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1.5px solid #f0f0f0;transition:all .2s}
+.cat-card:active{transform:scale(.97)}
+.cat-icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0}
+.cat-name{font-size:14px;font-weight:700;color:var(--t1)}
+.cat-count{font-size:11px;color:var(--t2);margin-top:2px}
+.cat-arrow{margin-left:auto;color:#cbd5e1;font-size:18px;flex-shrink:0}
+
+/* SEARCH PAGE */
+.search-bar-pg{padding:12px 16px;background:#fff;border-bottom:1px solid #f0f0f0;flex-shrink:0}
+.search-pg-inp{width:100%;padding:12px 16px 12px 44px;border:1.5px solid var(--bdr);border-radius:14px;font-size:14px;outline:none;background:#f8fffe;color:var(--t1)}
+.search-pg-inp:focus{border-color:var(--pl)}
+.filter-row{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;border-bottom:1px solid #f0f0f0;flex-shrink:0;scrollbar-width:none}
+.filter-row::-webkit-scrollbar{display:none}
+.fchip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:var(--t2);white-space:nowrap}
+.fchip.on{background:var(--p);color:#fff;border-color:var(--p)}
+.res-info{padding:10px 16px 4px;font-size:12px;color:var(--t2);font-weight:600;flex-shrink:0}
+
+/* MEDICINE DETAIL */
+.det-img{height:180px;display:flex;align-items:center;justify-content:center;font-size:90px;background:linear-gradient(135deg,#f0fdf9,#d1fae5);flex-shrink:0;position:relative}
+.det-off{position:absolute;top:14px;left:14px;background:var(--p);color:#fff;font-size:11px;font-weight:800;padding:5px 10px;border-radius:10px}
+.det-rx{position:absolute;top:14px;right:14px;background:#1e293b;color:#fff;font-size:10px;font-weight:700;padding:5px 8px;border-radius:8px}
+.det-body{padding:16px}
+.det-brand{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+.det-name{font-size:20px;font-weight:800;color:var(--t1);margin:4px 0 4px}
+.det-mfr{font-size:12px;color:var(--t2);margin-bottom:14px}
+.det-pr-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.det-price{font-size:26px;font-weight:800;color:var(--p)}
+.det-mrp{font-size:14px;color:#cbd5e1;text-decoration:line-through;margin-left:6px}
+.det-save{background:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:5px 10px;border-radius:10px}
+.info-box{background:#f8fafc;border-radius:14px;padding:14px;margin-bottom:10px}
+.info-lbl{font-size:10px;font-weight:800;color:var(--p);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.info-val{font-size:13px;color:var(--t1);line-height:1.65}
+.btn-big{width:100%;padding:16px;border:none;border-radius:16px;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:12px}
+.btn-big:active{transform:scale(.97)}
+.btn-add-big{background:linear-gradient(135deg,var(--p),var(--pl));color:#fff}
+.btn-notify-big{background:#1e293b;color:#fff}
+
+/* PROFILE */
+.prof-hd{background:linear-gradient(135deg,var(--p),var(--pl));padding:52px 16px 24px;text-align:center;color:#fff}
+.prof-av{width:72px;height:72px;background:rgba(255,255,255,.2);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 12px}
+.prof-name{font-size:20px;font-weight:800}
+.prof-sub{font-size:12px;opacity:.8;margin-top:4px}
+.call-big{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--green);color:#fff;text-decoration:none;border-radius:16px;padding:16px;margin:16px;font-size:16px;font-weight:800}
+.call-big:active{transform:scale(.97)}
+.menu-card{background:#fff;border-radius:18px;margin:0 16px 16px;overflow:hidden;border:1px solid #f0f0f0}
+.menu-row{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid #f8f8f8}
+.menu-row:last-child{border:none}
+.menu-row:active{background:#f8fffe}
+.menu-ic{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.menu-lbl{font-size:14px;font-weight:700;color:var(--t1);flex:1}
+.menu-sub{font-size:11px;color:var(--t2);margin-top:1px}
+.menu-arr{color:#cbd5e1;font-size:18px}
+.hrs-card{background:linear-gradient(135deg,#f0fdf9,#d1fae5);border:1px solid #a7f3d0;border-radius:16px;margin:0 16px 16px;padding:16px}
+.hrs-title{font-size:13px;font-weight:800;color:var(--pd);margin-bottom:10px}
+.hrs-row{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px}
+.hrs-day{color:var(--t2);font-weight:500}
+.hrs-time{color:var(--t1);font-weight:800}
+
+/* ADMIN */
+.adm-hd{background:linear-gradient(135deg,#1e293b,#334155);padding:52px 16px 20px;color:#fff;flex-shrink:0}
+.adm-hd h2{font-size:20px;font-weight:800}
+.adm-hd p{font-size:12px;opacity:.7;margin-top:2px}
+.adm-tabs{display:flex;background:#f8fafc;border-bottom:1px solid #e2e8f0;flex-shrink:0}
+.adm-tab{flex:1;padding:12px 4px;text-align:center;font-size:11px;font-weight:700;color:#94a3b8;cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s}
+.adm-tab.on{color:var(--p);border-color:var(--p)}
+.adm-sec{display:none;padding:16px;animation:fi .2s}
+.adm-sec.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-card{border-radius:16px;padding:14px;color:#fff;position:relative;overflow:hidden}
+.stat-card::after{content:attr(data-e);position:absolute;right:6px;bottom:-4px;font-size:34px;opacity:.25}
+.stat-n{font-size:26px;font-weight:800}
+.stat-l{font-size:11px;opacity:.85;margin-top:2px}
+.sec-card{background:#fff;border:1px solid #f0f0f0;border-radius:16px;overflow:hidden;margin-bottom:14px}
+.sec-card-hd{padding:14px 16px;border-bottom:1px solid #f8f8f8;font-size:13px;font-weight:800;color:var(--t1);display:flex;align-items:center;justify-content:space-between}
+.inv-row{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid #f8f8f8}
+.inv-row:last-child{border:none}
+.inv-em{font-size:24px;width:36px;text-align:center;flex-shrink:0}
+.inv-info{flex:1;min-width:0}
+.inv-name{font-size:13px;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inv-brand{font-size:11px;color:var(--t2)}
+.inv-stk{font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0}
+.inv-btns{display:flex;gap:5px;flex-shrink:0}
+.inv-btn{width:28px;height:28px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.inv-btn:active{transform:scale(.9)}
+.up-zone{border:2px dashed var(--bdr);border-radius:18px;padding:30px 20px;text-align:center;cursor:pointer;background:#f8fffe;margin-bottom:14px;position:relative}
+.up-zone:active{border-color:var(--p)}
+.up-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.up-zone-ic{font-size:48px;margin-bottom:10px}
+.up-zone h3{font-size:16px;font-weight:800;color:var(--t1);margin-bottom:4px}
+.up-zone p{font-size:12px;color:var(--t2)}
+.prog-bar{height:6px;background:#e2e8f0;border-radius:6px;overflow:hidden;margin:10px 0;display:none}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--pl));border-radius:6px;width:0;transition:width .3s}
+.up-res{display:none;background:#f0fdf9;border:1px solid #a7f3d0;border-radius:14px;padding:14px;margin-top:10px}
+.up-res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.up-res-item{text-align:center;padding:8px;background:#fff;border-radius:10px;border:1px solid #d1fae5}
+.up-res-n{font-size:20px;font-weight:800}
+.up-res-l{font-size:10px;color:var(--t2);margin-top:2px}
+.nf-item{padding:14px 16px;border-bottom:1px solid #f8f8f8;display:flex;align-items:flex-start;gap:10px}
+.nf-item:last-child{border:none}
+.nf-dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex-shrink:0}
+.nf-med{font-size:13px;font-weight:700;color:var(--t1)}
+.nf-cust{font-size:12px;color:var(--t2);margin-top:2px}
+.nf-ph{font-size:11px;color:var(--p);margin-top:2px;font-weight:700}
+.nf-done-btn{background:#f0fdf9;border:1.5px solid var(--bdr);color:var(--p);font-size:11px;font-weight:700;padding:6px 12px;border-radius:10px;cursor:pointer;flex-shrink:0;margin-left:auto}
+.nf-done-btn:active{transform:scale(.95)}
+
+/* NOTIFY FORM */
+.nf-form-wrap{background:#fff;border-radius:20px 20px 0 0;padding:20px;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:300;box-shadow:0 -8px 40px rgba(0,0,0,.2);display:none}
+.nf-form-wrap.on{display:block;animation:su .3s ease}
+@keyframes su{from{transform:translateX(-50%) translateY(100%)}to{transform:translateX(-50%) translateY(0)}}
+.nf-form-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:299;display:none}
+.nf-form-overlay.on{display:block}
+.form-inp{width:100%;padding:13px 16px;border:1.5px solid #e2e8f0;border-radius:14px;font-size:14px;outline:none;color:var(--t1);margin-bottom:10px;font-family:inherit}
+.form-inp:focus{border-color:var(--pl)}
+.form-submit{width:100%;padding:15px;background:linear-gradient(135deg,var(--p),var(--pl));color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:800;cursor:pointer;margin-top:4px}
+.form-submit:active{transform:scale(.97)}
+
+/* ADMIN LOCK */
+.adm-lock{position:absolute;inset:0;background:rgba(255,255,255,.98);z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px}
+.adm-lock-box{width:100%;max-width:300px;text-align:center}
+.adm-lock-ic{font-size:56px;margin-bottom:16px}
+.adm-lock-title{font-size:20px;font-weight:800;color:var(--t1);margin-bottom:6px}
+.adm-lock-sub{font-size:13px;color:var(--t2);margin-bottom:24px}
+.adm-lock-inp{width:100%;padding:15px;border:2px solid #e2e8f0;border-radius:16px;font-size:22px;text-align:center;outline:none;letter-spacing:8px;color:var(--t1);margin-bottom:14px;font-family:inherit}
+.adm-lock-inp:focus{border-color:var(--pl)}
+.adm-lock-btn{width:100%;padding:15px;background:linear-gradient(135deg,var(--p),var(--pl));color:#fff;border:none;border-radius:16px;font-size:16px;font-weight:800;cursor:pointer}
+.adm-lock-btn:active{transform:scale(.97)}
+.adm-lock-hint{font-size:11px;color:var(--t2);margin-top:12px}
+.adm-lock-err{color:var(--red);font-size:12px;font-weight:700;margin-top:8px;min-height:18px}
+
+/* TOAST */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#0f766e;color:#fff;padding:10px 22px;border-radius:22px;font-size:13px;font-weight:700;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.2);white-space:nowrap;opacity:0;transition:opacity .3s;pointer-events:none}
+
+/* HEALTH TIP */
+.tip-card{background:linear-gradient(135deg,#f0fdf9,#d1fae5);border:1px solid #a7f3d0;border-radius:18px;padding:16px;margin:0 16px 16px;display:flex;align-items:flex-start;gap:12px}
+.tip-em{font-size:30px;flex-shrink:0}
+.tip-txt{font-size:13px;color:var(--t1);line-height:1.65;font-weight:500}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME -->
+  <div class="page active" id="pg-home">
+    <div class="topbar">
+      <div class="topbar-row">
+        <div class="logo">
+          <div class="logo-box">🏥</div>
+          <div>
+            <div class="logo-name">Krishna Medical</div>
+            <div class="logo-sub">Your Trusted Pharmacy</div>
+          </div>
+        </div>
+        <a class="call-btn" href="tel:8585858585">📞 Call Us</a>
+      </div>
+      <div class="search-wrap">
+        <span class="s-icon">🔍</span>
+        <input class="search-input" id="homeSearch" placeholder='Search medicines, brands...' autocomplete="off"
+          oninput="doHomeSugg()" onblur="setTimeout(()=>document.getElementById('homeSugg').classList.remove('on'),200)">
+        <div class="sugg-box" id="homeSugg"></div>
+      </div>
+    </div>
+    <div class="page-body">
+
+      <div class="inst-banner" onclick="tryInstall()">
+        <div class="inst-ic">📲</div>
+        <div style="flex:1">
+          <div class="inst-title">Install Krishna Medical App</div>
+          <div class="inst-sub">Add to home screen for quick access</div>
+        </div>
+        <div class="inst-action">Install Free</div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-hd">
+          <div class="sec-title">📂 Categories</div>
+          <div class="sec-link" onclick="nav('categories')">View all →</div>
+        </div>
+        <div class="cat-mini">
+          <div class="cat-mini-item" onclick="openCat('fever')"><div class="cat-mini-em">🌡️</div><div class="cat-mini-lb">Fever</div></div>
+          <div class="cat-mini-item" onclick="openCat('pain')"><div class="cat-mini-em">💊</div><div class="cat-mini-lb">Pain</div></div>
+          <div class="cat-mini-item" onclick="openCat('cold')"><div class="cat-mini-em">🤧</div><div class="cat-mini-lb">Cold</div></div>
+          <div class="cat-mini-item" onclick="openCat('vitamins')"><div class="cat-mini-em">💪</div><div class="cat-mini-lb">Vitamins</div></div>
+          <div class="cat-mini-item" onclick="openCat('diabetes')"><div class="cat-mini-em">🩸</div><div class="cat-mini-lb">Diabetes</div></div>
+          <div class="cat-mini-item" onclick="openCat('skin')"><div class="cat-mini-em">✨</div><div class="cat-mini-lb">Skin</div></div>
+          <div class="cat-mini-item" onclick="openCat('firstaid')"><div class="cat-mini-em">🩹</div><div class="cat-mini-lb">First Aid</div></div>
+          <div class="cat-mini-item" onclick="openCat('heart')"><div class="cat-mini-em">❤️</div><div class="cat-mini-lb">Heart</div></div>
+        </div>
+      </div>
+
+      <div class="sec" style="margin-top:16px">
+        <div class="sec-hd">
+          <div class="sec-title">🔥 Popular Medicines</div>
+          <div class="sec-link" onclick="nav('search')">See all →</div>
+        </div>
+      </div>
+      <div class="med-grid" id="homeMeds"></div>
+
+      <div class="sec" style="padding-bottom:8px">
+        <div class="sec-title" style="margin-bottom:12px">💚 Health Tip</div>
+        <div class="tip-card">
+          <div class="tip-em" id="tipEm">💧</div>
+          <div class="tip-txt" id="tipTxt">Drink 8 glasses of water daily to stay hydrated and flush toxins from your body.</div>
+        </div>
+      </div>
+
+      <div style="margin:0 16px 16px;background:linear-gradient(135deg,#f0fdf9,#d1fae5);border:1px solid #a7f3d0;border-radius:18px;padding:16px">
+        <div style="font-size:14px;font-weight:800;color:var(--pd);margin-bottom:8px">📍 Visit Us</div>
+        <div style="font-size:13px;color:var(--t1);margin-bottom:2px;font-weight:500">Shop No. 12, Main Market</div>
+        <div style="font-size:12px;color:var(--t2);margin-bottom:14px">Near Government Hospital</div>
+        <a href="tel:8585858585" style="display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green);color:#fff;text-decoration:none;border-radius:14px;padding:13px;font-size:14px;font-weight:800">📞 Call Store — 8585858585</a>
+        <div style="text-align:center;font-size:11px;color:var(--t2);margin-top:10px">Mon–Sat: 8:00 AM – 9:00 PM &nbsp;|&nbsp; Sun: 9:00 AM – 6:00 PM</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="page" id="pg-categories">
+    <div class="back-header">
+      <button class="back-btn" onclick="goBack()">‹</button>
+      <div>
+        <div class="back-title">Categories</div>
+        <div class="back-sub">Choose a category</div>
+      </div>
+    </div>
+    <div class="page-body" style="padding-bottom:80px">
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+  </div>
+
+  <!-- CATEGORY MEDICINES -->
+  <div class="page" id="pg-catmeds">
+    <div class="back-header" id="catMedsHeader">
+      <button class="back-btn" onclick="goBack()">‹</button>
+      <div>
+        <div class="back-title" id="catMedsTitle">Category</div>
+        <div class="back-sub" id="catMedsSub">medicines</div>
+      </div>
+    </div>
+    <div class="page-body" style="padding-top:8px;padding-bottom:80px">
+      <div class="med-grid" id="catMedsGrid"></div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="page" id="pg-search">
+    <div style="background:linear-gradient(135deg,var(--p),var(--pl));padding:52px 16px 16px;flex-shrink:0">
+      <div style="color:#fff;font-size:17px;font-weight:800;margin-bottom:12px">🔍 Search Medicines</div>
+      <div class="search-wrap">
+        <span class="s-icon">🔍</span>
+        <input class="search-input" id="searchInp" placeholder="Search medicines, brands..." autocomplete="off" oninput="doSearch()">
+      </div>
+    </div>
+    <div class="filter-row" id="filterRow">
+      <div class="fchip on" onclick="setF('all',this)">All</div>
+      <div class="fchip" onclick="setF('fever',this)">🌡️ Fever</div>
+      <div class="fchip" onclick="setF('pain',this)">💊 Pain</div>
+      <div class="fchip" onclick="setF('cold',this)">🤧 Cold</div>
+      <div class="fchip" onclick="setF('diabetes',this)">🩸 Diabetes</div>
+      <div class="fchip" onclick="setF('vitamins',this)">💪 Vitamins</div>
+      <div class="fchip" onclick="setF('skin',this)">✨ Skin</div>
+      <div class="fchip" onclick="setF('firstaid',this)">🩹 First Aid</div>
+      <div class="fchip" onclick="setF('heart',this)">❤️ Heart</div>
+      <div class="fchip" onclick="setF('baby',this)">👶 Baby</div>
+    </div>
+    <div class="res-info" id="resInfo">30 results</div>
+    <div class="page-body" style="padding-top:4px;padding-bottom:80px">
+      <div class="med-grid" id="searchGrid"></div>
+    </div>
+  </div>
+
+  <!-- MEDICINE DETAIL -->
+  <div class="page" id="pg-detail">
+    <div style="position:relative;flex-shrink:0">
+      <button class="back-btn" onclick="goBack()" style="position:absolute;top:52px;left:12px;z-index:10;background:rgba(255,255,255,.85);border:none;border-radius:50%;width:38px;height:38px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center">‹</button>
+      <div class="det-img" id="detImg"></div>
+    </div>
+    <div class="page-body" style="padding-bottom:100px">
+      <div class="det-body">
+        <div class="det-brand" id="detBrand"></div>
+        <div class="det-name" id="detName"></div>
+        <div class="det-mfr" id="detMfr"></div>
+        <div class="det-pr-row">
+          <div style="display:flex;align-items:baseline">
+            <div class="det-price" id="detPrice"></div>
+            <div class="det-mrp" id="detMrp"></div>
+          </div>
+          <div class="det-save" id="detSave"></div>
+        </div>
+        <div id="detStock" style="margin-bottom:14px"></div>
+        <div class="info-box"><div class="info-lbl">📋 Description</div><div class="info-val" id="detDesc"></div></div>
+        <div class="info-box"><div class="info-lbl">⚡ Uses</div><div class="info-val" id="detUses"></div></div>
+        <div class="info-box"><div class="info-lbl">💧 Dosage</div><div class="info-val" id="detDosage"></div></div>
+        <div class="info-box"><div class="info-lbl">📦 Storage</div><div class="info-val" id="detStorage"></div></div>
+        <div id="detBtn"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="page" id="pg-profile">
+    <div class="page-body" style="padding-bottom:80px">
+      <div class="prof-hd">
+        <div class="prof-av">🏥</div>
+        <div class="prof-name">Krishna Medical Store</div>
+        <div class="prof-sub">Your Trusted Neighbourhood Pharmacy</div>
+      </div>
+      <a class="call-big" href="tel:8585858585">📞 Call Store — 8585858585</a>
+      <div class="menu-card">
+        <div class="menu-row">
+          <div class="menu-ic" style="background:#f0fdf9">📍</div>
+          <div style="flex:1"><div class="menu-lbl">Store Location</div><div class="menu-sub">Shop No. 12, Main Market</div></div>
+          <div class="menu-arr">›</div>
+        </div>
+        <div class="menu-row">
+          <div class="menu-ic" style="background:#fef3c7">⏰</div>
+          <div style="flex:1"><div class="menu-lbl">Store Hours</div><div class="menu-sub">Mon–Sat 8am–9pm</div></div>
+          <div class="menu-arr">›</div>
+        </div>
+        <div class="menu-row" onclick="tryInstall()">
+          <div class="menu-ic" style="background:#dbeafe">📲</div>
+          <div style="flex:1"><div class="menu-lbl">Install App</div><div class="menu-sub">Add to home screen</div></div>
+          <div class="menu-arr">›</div>
+        </div>
+        <div class="menu-row" onclick="nav('admin')">
+          <div class="menu-ic" style="background:#f1f5f9">⚙️</div>
+          <div class="menu-lbl">Admin Panel</div>
+          <div class="menu-arr">›</div>
+        </div>
+      </div>
+      <div class="hrs-card">
+        <div class="hrs-title">🕐 Store Hours</div>
+        <div class="hrs-row"><div class="hrs-day">Monday – Friday</div><div class="hrs-time">8:00 AM – 9:00 PM</div></div>
+        <div class="hrs-row"><div class="hrs-day">Saturday</div><div class="hrs-time">8:00 AM – 9:00 PM</div></div>
+        <div class="hrs-row"><div class="hrs-day">Sunday</div><div class="hrs-time">9:00 AM – 6:00 PM</div></div>
+      </div>
+      <div style="text-align:center;padding:8px;font-size:11px;color:var(--t2)">Krishna Medical Store v1.0 · Made with ❤️ for better healthcare</div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="page" id="pg-admin">
+    <!-- LOCK SCREEN -->
+    <div class="adm-lock" id="admLock">
+      <div class="adm-lock-box">
+        <div class="adm-lock-ic">🔐</div>
+        <div class="adm-lock-title">Admin Access</div>
+        <div class="adm-lock-sub">Enter your PIN to continue</div>
+        <input class="adm-lock-inp" id="pinInp" type="password" inputmode="numeric" maxlength="4" placeholder="••••" onkeyup="if(event.key==='Enter')checkPin()">
+        <button class="adm-lock-btn" onclick="checkPin()">Unlock Admin</button>
+        <div class="adm-lock-hint">Default PIN: 1234</div>
+        <div class="adm-lock-err" id="pinErr"></div>
+      </div>
+      <button onclick="goBack()" style="position:absolute;top:52px;left:16px;background:none;border:none;font-size:14px;color:var(--t2);cursor:pointer;font-weight:700">‹ Back</button>
+    </div>
+    <!-- ADMIN CONTENT -->
+    <div id="admContent" style="display:none;flex-direction:column;height:100%">
+      <div class="adm-hd">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><h2>⚙️ Admin Panel</h2><p>Krishna Medical Store</p></div>
+          <button onclick="lockAdmin()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 12px;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer">🔒 Lock</button>
+        </div>
+      </div>
+      <div class="adm-tabs">
+        <div class="adm-tab on" onclick="aTab('dashboard',this)">📊 Dashboard</div>
+        <div class="adm-tab" onclick="aTab('inventory',this)">📦 Inventory</div>
+        <div class="adm-tab" onclick="aTab('upload',this)">📤 Upload</div>
+        <div class="adm-tab" onclick="aTab('notify',this)">🔔 Notify</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding-bottom:80px">
+        <!-- DASHBOARD -->
+        <div class="adm-sec on" id="as-dashboard">
+          <div class="stat-grid">
+            <div class="stat-card" data-e="📦" style="background:linear-gradient(135deg,#0f766e,#14b8a6)"><div class="stat-n">30</div><div class="stat-l">Total Products</div></div>
+            <div class="stat-card" data-e="✅" style="background:linear-gradient(135deg,#059669,#10b981)"><div class="stat-n">22</div><div class="stat-l">Available</div></div>
+            <div class="stat-card" data-e="⚠️" style="background:linear-gradient(135deg,#d97706,#f59e0b)"><div class="stat-n">4</div><div class="stat-l">Low Stock</div></div>
+            <div class="stat-card" data-e="❌" style="background:linear-gradient(135deg,#dc2626,#ef4444)"><div class="stat-n">4</div><div class="stat-l">Out of Stock</div></div>
+          </div>
+          <div class="sec-card">
+            <div class="sec-card-hd">🔥 Most Viewed</div>
+            <div id="topMeds"></div>
+          </div>
+          <div class="sec-card">
+            <div class="sec-card-hd">📋 Last Upload</div>
+            <div style="padding:14px 16px">
+              <div style="font-size:12px;color:var(--t2);margin-bottom:8px">Today, 2:30 PM — 3500 products</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <span style="background:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px">+200 Added</span>
+                <span style="background:#dbeafe;color:#1e40af;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px">3285 Updated</span>
+                <span style="background:#fee2e2;color:#991b1b;font-size:11px;font-weight:700;padding:4px 10px;border-radius:8px">15 Failed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- INVENTORY -->
+        <div class="adm-sec" id="as-inventory">
+          <div style="position:relative;margin-bottom:12px">
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px">🔍</span>
+            <input id="invSrch" style="width:100%;padding:12px 16px 12px 42px;border:1.5px solid var(--bdr);border-radius:14px;font-size:13px;outline:none;background:#f8fffe;color:var(--t1)" placeholder="Search inventory..." oninput="renderInv()">
+          </div>
+          <div class="sec-card" style="margin:0">
+            <div class="sec-card-hd">All Products <span id="invCnt" style="background:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px">30</span></div>
+            <div id="invList"></div>
+          </div>
+        </div>
+        <!-- UPLOAD -->
+        <div class="adm-sec" id="as-upload">
+          <label class="up-zone">
+            <input type="file" accept=".xlsx,.xls" onchange="handleUp(this)">
+            <div class="up-zone-ic">📊</div>
+            <h3>Upload Inventory</h3>
+            <p>Tap to choose Excel file<br><span style="font-size:11px">.xlsx or .xls — Max 400MB</span></p>
+          </label>
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px;margin-bottom:14px">
+            <div style="font-size:12px;font-weight:800;color:var(--t1);margin-bottom:8px">📋 Required Columns</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px">
+              <div style="font-size:11px;color:var(--t2)">• Medicine Name *</div>
+              <div style="font-size:11px;color:var(--t2)">• Brand *</div>
+              <div style="font-size:11px;color:var(--t2)">• Price *</div>
+              <div style="font-size:11px;color:var(--t2)">• Stock *</div>
+              <div style="font-size:11px;color:var(--t2)">• MRP</div>
+              <div style="font-size:11px;color:var(--t2)">• Category</div>
+              <div style="font-size:11px;color:var(--t2)">• Product Code</div>
+              <div style="font-size:11px;color:var(--t2)">• Rx Required</div>
+            </div>
+          </div>
+          <div class="prog-bar" id="progBar"><div class="prog-fill" id="progFill"></div></div>
+          <div class="up-res" id="upRes">
+            <div style="font-size:13px;font-weight:800;color:var(--p)">✅ Upload Complete!</div>
+            <div class="up-res-grid">
+              <div class="up-res-item"><div class="up-res-n" id="rTot" style="color:var(--t1)">0</div><div class="up-res-l">Total</div></div>
+              <div class="up-res-item"><div class="up-res-n" id="rAdd" style="color:var(--green)">0</div><div class="up-res-l">Added</div></div>
+              <div class="up-res-item"><div class="up-res-n" id="rUpd" style="color:var(--p)">0</div><div class="up-res-l">Updated</div></div>
+              <div class="up-res-item"><div class="up-res-n" id="rFail" style="color:var(--red)">0</div><div class="up-res-l">Failed</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- NOTIFY -->
+        <div class="adm-sec" id="as-notify">
+          <div class="sec-card" style="margin-top:4px">
+            <div class="sec-card-hd">🔔 Notify Requests <span id="nfCnt" style="background:#fef3c7;color:#92400e;font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px">3</span></div>
+            <div id="nfList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-btn on" id="nb-home" onclick="nav('home')"><span class="nav-ic">🏠</span><span class="nav-lb">Home</span></button>
+    <button class="nav-btn" id="nb-categories" onclick="nav('categories')"><span class="nav-ic">📂</span><span class="nav-lb">Categories</span></button>
+    <button class="nav-btn" id="nb-search" onclick="nav('search')"><span class="nav-ic">🔍</span><span class="nav-lb">Search</span></button>
+    <button class="nav-btn" id="nb-admin" onclick="nav('admin')"><span class="nav-ic">⚙️</span><span class="nav-lb">Admin</span></button>
+    <button class="nav-btn" id="nb-profile" onclick="nav('profile')"><span class="nav-ic">👤</span><span class="nav-lb">Profile</span></button>
+  </nav>
+</div>
+
+<!-- NOTIFY FORM -->
+<div class="nf-form-overlay" id="nfOverlay" onclick="closeNfForm()"></div>
+<div class="nf-form-wrap" id="nfForm">
+  <div style="width:40px;height:4px;background:#e2e8f0;border-radius:4px;margin:0 auto 16px"></div>
+  <div style="font-size:17px;font-weight:800;margin-bottom:4px">🔔 Notify Me</div>
+  <div style="font-size:13px;color:var(--t2);margin-bottom:16px" id="nfMedName">Get notified when this is back in stock</div>
+  <input class="form-inp" id="nfName" placeholder="Your Name *">
+  <input class="form-inp" id="nfMobile" type="tel" placeholder="Mobile Number *">
+  <input class="form-inp" id="nfEmail" type="email" placeholder="Email (optional)">
+  <button class="form-submit" onclick="submitNf()">Submit Request</button>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const MEDS=[
+  {id:1,name:"Dolo 650",brand:"Micro Labs",mfr:"Micro Labs Ltd",cat:"fever",price:30,mrp:35,stock:50,em:"🟡",rx:false,desc:"Analgesic and antipyretic for pain relief and fever.",uses:"Headache, fever, body ache, toothache, menstrual cramps.",dosage:"1 tablet every 4-6 hours. Maximum 4 tablets per day.",storage:"Store below 25°C in cool, dry place."},
+  {id:2,name:"Calpol 500mg",brand:"GSK",mfr:"GlaxoSmithKline Ltd",cat:"fever",price:25,mrp:28,stock:8,em:"🟠",rx:false,desc:"Paracetamol tablet for fever and mild pain relief.",uses:"Fever, headache, mild to moderate pain.",dosage:"1-2 tablets every 4-6 hours.",storage:"Store below 30°C."},
+  {id:3,name:"Paracip 500",brand:"Cipla",mfr:"Cipla Ltd",cat:"fever",price:18,mrp:20,stock:35,em:"🟡",rx:false,desc:"Trusted paracetamol for fever management.",uses:"Fever, headache, body pain.",dosage:"1 tablet 3-4 times daily.",storage:"Store in cool, dry place."},
+  {id:4,name:"Combiflam",brand:"Sanofi",mfr:"Sanofi India Ltd",cat:"pain",price:52,mrp:58,stock:5,em:"🔴",rx:false,desc:"Combination of ibuprofen and paracetamol.",uses:"Fever, pain, inflammation, arthritis.",dosage:"1 tablet 2-3 times daily after food.",storage:"Store below 30°C."},
+  {id:5,name:"Brufen 400mg",brand:"Abbott",mfr:"Abbott India Ltd",cat:"pain",price:38,mrp:42,stock:22,em:"🔴",rx:false,desc:"Ibuprofen tablet for pain and inflammation.",uses:"Pain, fever, inflammation, arthritis.",dosage:"1 tablet 3 times daily with food.",storage:"Store below 25°C."},
+  {id:6,name:"Volini Gel 30g",brand:"Sun Pharma",mfr:"Sun Pharmaceutical",cat:"pain",price:120,mrp:140,stock:18,em:"🟦",rx:false,desc:"Topical diclofenac gel for local pain relief.",uses:"Muscle pain, joint pain, sports injuries, back pain.",dosage:"Apply 2-4g on affected area 3-4 times daily.",storage:"Store below 30°C away from heat."},
+  {id:7,name:"Diclofenac 50mg",brand:"Generic",mfr:"Sun Pharmaceutical",cat:"pain",price:18,mrp:20,stock:0,em:"🔵",rx:true,desc:"Anti-inflammatory and analgesic tablet.",uses:"Arthritis, back pain, dental pain, menstrual pain.",dosage:"As prescribed by physician.",storage:"Store below 30°C."},
+  {id:8,name:"Azithromycin 500",brand:"Cipla",mfr:"Cipla Ltd",cat:"cold",price:85,mrp:95,stock:0,em:"🟢",rx:true,desc:"Macrolide antibiotic for bacterial infections.",uses:"Respiratory infections, ear infections, skin infections.",dosage:"As prescribed by physician.",storage:"Store at room temperature below 30°C."},
+  {id:9,name:"Benadryl Cough",brand:"J&J",mfr:"Johnson & Johnson",cat:"cold",price:110,mrp:120,stock:8,em:"🍯",rx:false,desc:"Diphenhydramine syrup for cough and cold relief.",uses:"Cough, cold, runny nose, allergic rhinitis.",dosage:"10ml 3-4 times daily.",storage:"Store below 30°C."},
+  {id:10,name:"Sinarest LP",brand:"Centaur",mfr:"Centaur Pharmaceuticals",cat:"cold",price:78,mrp:85,stock:30,em:"🟤",rx:false,desc:"Combination tablet for cold and nasal congestion.",uses:"Cold, fever, nasal congestion, headache.",dosage:"1 tablet twice daily.",storage:"Store below 30°C."},
+  {id:11,name:"Allegra 120mg",brand:"Sanofi",mfr:"Sanofi India",cat:"cold",price:95,mrp:105,stock:15,em:"🟣",rx:false,desc:"Fexofenadine antihistamine for allergy relief.",uses:"Allergic rhinitis, urticaria, seasonal allergies.",dosage:"1 tablet twice daily.",storage:"Store below 30°C."},
+  {id:12,name:"Metformin 500",brand:"Sun Pharma",mfr:"Sun Pharmaceutical",cat:"diabetes",price:35,mrp:38,stock:20,em:"🔵",rx:true,desc:"Oral antidiabetic medication for Type 2 diabetes.",uses:"Type 2 diabetes management, blood sugar control.",dosage:"As prescribed by physician, usually with meals.",storage:"Store below 30°C in a dry place."},
+  {id:13,name:"Glimepiride 2mg",brand:"Sanofi",mfr:"Sanofi India",cat:"diabetes",price:68,mrp:75,stock:12,em:"🟠",rx:true,desc:"Sulfonylurea antidiabetic drug.",uses:"Type 2 diabetes, blood glucose control.",dosage:"As prescribed. Usually once daily before breakfast.",storage:"Store below 30°C."},
+  {id:14,name:"Glucobay 25mg",brand:"Bayer",mfr:"Bayer Pharmaceuticals",cat:"diabetes",price:125,mrp:140,stock:0,em:"🟡",rx:true,desc:"Alpha-glucosidase inhibitor for diabetes.",uses:"Post-meal blood sugar control in Type 2 diabetes.",dosage:"As prescribed by physician.",storage:"Store below 25°C."},
+  {id:15,name:"Vitamin C 1000mg",brand:"Himalaya",mfr:"Himalaya Drug Company",cat:"vitamins",price:199,mrp:240,stock:35,em:"🍊",rx:false,desc:"High-strength Vitamin C supplement.",uses:"Immunity booster, antioxidant, collagen synthesis.",dosage:"1 tablet daily dissolved in water.",storage:"Store in cool, dry place away from sunlight."},
+  {id:16,name:"Vitamin D3 60K",brand:"Sun Pharma",mfr:"Sun Pharmaceutical",cat:"vitamins",price:89,mrp:98,stock:40,em:"☀️",rx:false,desc:"Vitamin D3 supplement for bone health.",uses:"Vitamin D deficiency, bone health, immunity.",dosage:"Once weekly or as prescribed.",storage:"Store below 25°C."},
+  {id:17,name:"Revital H",brand:"Sun Pharma",mfr:"Sun Pharmaceutical",cat:"vitamins",price:375,mrp:420,stock:25,em:"⚡",rx:false,desc:"Multivitamin with ginseng for energy and stamina.",uses:"Energy, stamina, overall health and vitality.",dosage:"1 capsule daily with water.",storage:"Store in cool, dry place."},
+  {id:18,name:"Neurobion Forte",brand:"Merck",mfr:"Merck Ltd",cat:"vitamins",price:45,mrp:50,stock:50,em:"🔋",rx:false,desc:"Vitamin B complex tablet for nerve health.",uses:"Nerve health, vitamin B deficiency, fatigue.",dosage:"1 tablet daily after meals.",storage:"Store below 30°C."},
+  {id:19,name:"Betadine 100ml",brand:"Win-Medicare",mfr:"Win-Medicare Pvt Ltd",cat:"firstaid",price:55,mrp:62,stock:22,em:"🟫",rx:false,desc:"Povidone-iodine 10% antiseptic solution.",uses:"Wound cleaning, antiseptic, pre/post-surgical.",dosage:"Apply on affected area and cover with bandage.",storage:"Store away from direct light."},
+  {id:20,name:"Savlon Liquid",brand:"ICI",mfr:"ICI India",cat:"firstaid",price:89,mrp:98,stock:18,em:"🧴",rx:false,desc:"Chlorhexidine antiseptic liquid for skin disinfection.",uses:"Wound cleaning, antiseptic, skin disinfection.",dosage:"Dilute and apply on affected area.",storage:"Store below 30°C."},
+  {id:21,name:"Lacto Calamine",brand:"Piramal",mfr:"Piramal Healthcare",cat:"skin",price:145,mrp:160,stock:20,em:"🌸",rx:false,desc:"Calamine lotion for skin care and sun protection.",uses:"Oily skin, acne, sunburn, insect bites.",dosage:"Apply thin layer on affected area twice daily.",storage:"Store in cool, dry place."},
+  {id:22,name:"Cetaphil Face Wash",brand:"Galderma",mfr:"Galderma India",cat:"skin",price:299,mrp:330,stock:10,em:"🫧",rx:false,desc:"Gentle skin cleanser for sensitive skin.",uses:"Daily face cleansing, sensitive skin care.",dosage:"Apply on wet face, massage gently, rinse.",storage:"Store below 30°C."},
+  {id:23,name:"Himalaya Face Wash",brand:"Himalaya",mfr:"Himalaya Drug Company",cat:"skin",price:99,mrp:110,stock:35,em:"🌿",rx:false,desc:"Neem face wash for oily skin and acne.",uses:"Oily skin, acne, daily cleansing.",dosage:"Use twice daily on wet face.",storage:"Store below 30°C."},
+  {id:24,name:"Ecosprin 75mg",brand:"USV",mfr:"USV Ltd",cat:"heart",price:28,mrp:32,stock:45,em:"❤️",rx:true,desc:"Aspirin tablet for cardiovascular protection.",uses:"Prevention of heart attack, stroke, blood thinning.",dosage:"As prescribed. Usually 1 tablet daily after food.",storage:"Store below 30°C."},
+  {id:25,name:"Amlodipine 5mg",brand:"Sun Pharma",mfr:"Sun Pharmaceutical",cat:"heart",price:42,mrp:48,stock:28,em:"🩷",rx:true,desc:"Calcium channel blocker for hypertension.",uses:"High blood pressure, angina, heart disease.",dosage:"As prescribed by physician.",storage:"Store below 30°C."},
+  {id:26,name:"Atorvastatin 10mg",brand:"Cipla",mfr:"Cipla Ltd",cat:"heart",price:65,mrp:72,stock:0,em:"💙",rx:true,desc:"Statin medication for cholesterol management.",uses:"High cholesterol, cardiovascular risk reduction.",dosage:"As prescribed, usually once daily at night.",storage:"Store below 30°C."},
+  {id:27,name:"Crocin Advance",brand:"GSK",mfr:"GlaxoSmithKline",cat:"fever",price:43,mrp:48,stock:40,em:"🟡",rx:false,desc:"Fast-acting paracetamol for fever and pain.",uses:"Fever, headache, body ache, toothache.",dosage:"1-2 tablets every 4-6 hours.",storage:"Store below 30°C."},
+  {id:28,name:"Cetirizine 10mg",brand:"Generic",mfr:"Cipla Ltd",cat:"cold",price:15,mrp:18,stock:50,em:"🔵",rx:false,desc:"Antihistamine for allergy relief.",uses:"Allergies, urticaria, hay fever, itching.",dosage:"1 tablet once daily at bedtime.",storage:"Store below 30°C."},
+  {id:29,name:"Johnson Baby Lotion",brand:"J&J",mfr:"Johnson & Johnson",cat:"baby",price:185,mrp:210,stock:22,em:"👶",rx:false,desc:"Gentle moisturizing lotion for baby skin.",uses:"Daily baby skin moisturization, dryness prevention.",dosage:"Apply gently on baby skin after bath.",storage:"Store at room temperature."},
+  {id:30,name:"Neurobion Plus",brand:"Merck",mfr:"Merck Ltd",cat:"vitamins",price:68,mrp:78,stock:30,em:"💊",rx:false,desc:"Vitamin B1 B6 B12 combination tablet.",uses:"Peripheral neuropathy, nerve pain, vitamin deficiency.",dosage:"1 tablet daily after meals.",storage:"Store below 30°C."},
+];
+
+const CATS=[
+  {id:"fever",name:"Fever",em:"🌡️",bg:"#fef3c7",br:"#fde68a"},
+  {id:"pain",name:"Pain Relief",em:"💊",bg:"#fee2e2",br:"#fca5a5"},
+  {id:"cold",name:"Cold & Cough",em:"🤧",bg:"#dbeafe",br:"#93c5fd"},
+  {id:"diabetes",name:"Diabetes",em:"🩸",bg:"#ede9fe",br:"#c4b5fd"},
+  {id:"vitamins",name:"Vitamins",em:"💪",bg:"#d1fae5",br:"#6ee7b7"},
+  {id:"skin",name:"Skin Care",em:"✨",bg:"#fce7f3",br:"#f9a8d4"},
+  {id:"firstaid",name:"First Aid",em:"🩹",bg:"#ecfdf5",br:"#86efac"},
+  {id:"heart",name:"Heart Care",em:"❤️",bg:"#fee2e2",br:"#fca5a5"},
+  {id:"baby",name:"Baby Care",em:"👶",bg:"#fef9c3",br:"#fde047"},
+];
+
+const TIPS=[
+  {e:"💧",t:"Drink 8 glasses of water daily to stay hydrated and flush toxins from your body."},
+  {e:"🏃",t:"30 minutes of walking daily can reduce heart disease risk by up to 35%."},
+  {e:"🥦",t:"Green vegetables are rich in iron and vitamins — include them in every meal."},
+  {e:"💤",t:"7-9 hours of sleep is essential for a healthy immune system."},
+  {e:"🍊",t:"Vitamin C boosts immunity. Have citrus fruits or a supplement daily."},
+];
+
+const NOTIFS=[
+  {med:"Azithromycin 500",cust:"Rahul Sharma",phone:"9876543210",done:false},
+  {med:"Glucobay 25mg",cust:"Priya Patel",phone:"9876543211",done:false},
+  {med:"Diclofenac 50mg",cust:"Amit Kumar",phone:"9876543212",done:false},
+  {med:"Atorvastatin 10mg",cust:"Deepa Rao",phone:"9876543213",done:true},
+];
+
+let pageStack=['home'];
+let catFilter='all';
+let curMedId=null;
+let tipI=0;
+let dip=null;
+let adminUnlocked=false;
+
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;});
+
+function tryInstall(){
+  if(dip){dip.prompt();dip.userChoice.then(()=>dip=null);}
+  else alert('To install:\n📱 iPhone/iPad: Tap Share → "Add to Home Screen"\n🤖 Android/Chrome: Tap ⋮ menu → "Add to Home Screen"');
+}
+
+function stockBadge(s){
+  if(s<=0)return'<span class="sout">● Out of Stock</span>';
+  if(s<=10)return`<span class="slow">● Only ${s} Left</span>`;
+  return'<span class="sok">● Available</span>';
+}
+
+function medCard(m){
+  const off=Math.round((m.mrp-m.price)/m.mrp*100);
+  return`<div class="med-card" onclick="openDet(${m.id})">
+    <div class="med-img">
+      ${m.em}
+      ${off>0?`<span class="badge-off">${off}% OFF</span>`:''}
+      ${m.rx?'<span class="badge-rx">Rx</span>':''}
+    </div>
+    <div class="med-body">
+      <div class="med-brand">${m.brand}</div>
+      <div class="med-name">${m.name}</div>
+      ${stockBadge(m.stock)}
+      <div class="med-foot">
+        <div><span class="med-price">₹${m.price}</span><span class="med-mrp">₹${m.mrp}</span></div>
+        ${m.stock>0
+          ?`<button class="btn-cart" onclick="event.stopPropagation();toast('Added to cart ✓')">🛒</button>`
+          :`<button class="btn-bell" onclick="event.stopPropagation();openNfForm(${m.id})">🔔</button>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+function nav(pg){
+  if(pg===pageStack[pageStack.length-1])return;
+  // update prev
+  const prev=document.getElementById('pg-'+pageStack[pageStack.length-1]);
+  prev.classList.remove('active');
+  prev.classList.add('prev');
+  setTimeout(()=>prev.classList.remove('prev'),350);
+
+  pageStack.push(pg);
+  const cur=document.getElementById('pg-'+pg);
+  cur.classList.add('active');
+
+  // nav highlight — only for main tabs
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  const nb=document.getElementById('nb-'+pg);
+  if(nb)nb.classList.add('on');
+
+  if(pg==='search'&&document.getElementById('searchInp'))setTimeout(()=>document.getElementById('searchInp').focus(),400);
+}
+
+function goBack(){
+  if(pageStack.length<=1)return;
+  const cur=document.getElementById('pg-'+pageStack[pageStack.length-1]);
+  cur.classList.remove('active');
+  pageStack.pop();
+  const prev=document.getElementById('pg-'+pageStack[pageStack.length-1]);
+  prev.classList.add('active');
+  prev.classList.remove('prev');
+
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  const pg=pageStack[pageStack.length-1];
+  const nb=document.getElementById('nb-'+pg);
+  if(nb)nb.classList.add('on');
+}
+
+function openCat(catId){
+  const cat=CATS.find(c=>c.id===catId);
+  const meds=MEDS.filter(m=>m.cat===catId);
+  document.getElementById('catMedsTitle').textContent=(cat?cat.em+' ':'')+cat.name;
+  document.getElementById('catMedsSub').textContent=meds.length+' medicines';
+  document.getElementById('catMedsGrid').innerHTML=meds.map(m=>medCard(m)).join('');
+  nav('catmeds');
+}
+
+function openDet(id){
+  const m=MEDS.find(x=>x.id===id);
+  curMedId=id;
+  const off=Math.round((m.mrp-m.price)/m.mrp*100);
+  document.getElementById('detImg').innerHTML=`<span style="font-size:90px">${m.em}</span>${off>0?`<span class="det-off">${off}% OFF</span>`:''}${m.rx?'<span class="det-rx">⚠️ Rx Required</span>':''}`;
+  document.getElementById('detBrand').textContent=m.brand;
+  document.getElementById('detName').textContent=m.name;
+  document.getElementById('detMfr').textContent=m.mfr;
+  document.getElementById('detPrice').textContent='₹'+m.price;
+  document.getElementById('detMrp').textContent='₹'+m.mrp;
+  document.getElementById('detSave').textContent='Save ₹'+(m.mrp-m.price);
+  document.getElementById('detStock').innerHTML=stockBadge(m.stock);
+  document.getElementById('detDesc').textContent=m.desc;
+  document.getElementById('detUses').textContent=m.uses;
+  document.getElementById('detDosage').textContent=m.dosage;
+  document.getElementById('detStorage').textContent=m.storage;
+  document.getElementById('detBtn').innerHTML=m.stock>0
+    ?`<button class="btn-big btn-add-big" onclick="toast('Added to cart ✓');goBack()">🛒 Add to Cart</button>`
+    :`<button class="btn-big btn-notify-big" onclick="goBack();setTimeout(()=>openNfForm(${m.id}),400)">🔔 Notify When Available</button>`;
+  nav('detail');
+}
+
+function doHomeSugg(){
+  const q=document.getElementById('homeSearch').value.toLowerCase();
+  const box=document.getElementById('homeSugg');
+  if(!q||q.length<2){box.classList.remove('on');return;}
+  const res=MEDS.filter(m=>m.name.toLowerCase().includes(q)||m.brand.toLowerCase().includes(q)).slice(0,5);
+  if(!res.length){box.classList.remove('on');return;}
+  box.innerHTML=res.map(m=>`<div class="sugg-row" onmousedown="openDet(${m.id})"><div class="sugg-em">${m.em}</div><div><div class="sugg-nm">${m.name}</div><div class="sugg-br">${m.brand}</div></div><div class="sugg-pr">₹${m.price}</div></div>`).join('');
+  box.classList.add('on');
+}
+
+function doSearch(){
+  const q=document.getElementById('searchInp').value.toLowerCase();
+  let list=MEDS;
+  if(catFilter!=='all')list=list.filter(m=>m.cat===catFilter);
+  if(q)list=list.filter(m=>m.name.toLowerCase().includes(q)||m.brand.toLowerCase().includes(q));
+  document.getElementById('resInfo').textContent=list.length+' result'+(list.length!==1?'s':'')+(q?` for "${q}"`:catFilter!=='all'?` in ${catFilter}`:'');
+  document.getElementById('searchGrid').innerHTML=list.length?list.map(m=>medCard(m)).join(''):`<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--t2)"><div style="font-size:40px;margin-bottom:8px">🔍</div><div style="font-size:14px;font-weight:700">No medicines found</div></div>`;
+}
+
+function setF(cat,el){
+  catFilter=cat;
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  doSearch();
+}
+
+function openNfForm(id){
+  curMedId=id;
+  const m=MEDS.find(x=>x.id===id);
+  document.getElementById('nfMedName').textContent='Get notified when "'+m.name+'" is back in stock.';
+  document.getElementById('nfOverlay').classList.add('on');
+  document.getElementById('nfForm').classList.add('on');
+}
+function closeNfForm(){
+  document.getElementById('nfOverlay').classList.remove('on');
+  document.getElementById('nfForm').classList.remove('on');
+}
+function submitNf(){
+  const name=document.getElementById('nfName').value.trim();
+  const mob=document.getElementById('nfMobile').value.trim();
+  if(!name||!mob){toast('Please fill Name and Mobile ⚠️');return;}
+  const m=MEDS.find(x=>x.id===curMedId);
+  NOTIFS.unshift({med:m.name,cust:name,phone:mob,done:false});
+  closeNfForm();
+  document.getElementById('nfName').value='';
+  document.getElementById('nfMobile').value='';
+  document.getElementById('nfEmail').value='';
+  toast("✅ You'll be notified when it's available!");
+  renderNfList();
+}
+
+function checkPin(){
+  const p=document.getElementById('pinInp').value;
+  if(p==='1234'){
+    adminUnlocked=true;
+    document.getElementById('admLock').style.display='none';
+    document.getElementById('admContent').style.display='flex';
+    renderTopMeds();renderInv();renderNfList();
+  } else {
+    document.getElementById('pinErr').textContent='Wrong PIN. Try again.';
+    document.getElementById('pinInp').value='';
+    setTimeout(()=>document.getElementById('pinErr').textContent='',2000);
+  }
+}
+function lockAdmin(){
+  adminUnlocked=false;
+  document.getElementById('admLock').style.display='flex';
+  document.getElementById('admContent').style.display='none';
+  document.getElementById('pinInp').value='';
+  document.getElementById('pinErr').textContent='';
+}
+
+function aTab(tab,el){
+  document.querySelectorAll('.adm-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.adm-sec').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('as-'+tab).classList.add('on');
+  if(tab==='inventory')renderInv();
+  if(tab==='notify')renderNfList();
+}
+
+function renderTopMeds(){
+  document.getElementById('topMeds').innerHTML=MEDS.slice(0,5).map((m,i)=>`
+    <div class="inv-row">
+      <div class="inv-em">${m.em}</div>
+      <div class="inv-info"><div class="inv-name">${m.name}</div><div class="inv-brand">${m.brand}</div></div>
+      <div class="inv-stk" style="color:${m.stock<=0?'var(--red)':m.stock<=10?'var(--amber)':'var(--green)'}">${m.stock<=0?'Out':m.stock<=10?m.stock+' left':m.stock}</div>
+    </div>`).join('');
+}
+
+function renderInv(){
+  const q=(document.getElementById('invSrch')?.value||'').toLowerCase();
+  let list=MEDS;
+  if(q)list=list.filter(m=>m.name.toLowerCase().includes(q)||m.brand.toLowerCase().includes(q));
+  document.getElementById('invCnt').textContent=list.length;
+  document.getElementById('invList').innerHTML=list.map(m=>`
+    <div class="inv-row">
+      <div class="inv-em">${m.em}</div>
+      <div class="inv-info"><div class="inv-name">${m.name}</div><div class="inv-brand">${m.brand} · ₹${m.price}</div></div>
+      <div class="inv-stk" style="color:${m.stock<=0?'var(--red)':m.stock<=10?'var(--amber)':'var(--green)'}">${m.stock<=0?'Out':m.stock<=10?m.stock+' left':m.stock}</div>
+      <div class="inv-btns"><button class="inv-btn" onclick="toast('Edit coming soon!')">✏️</button><button class="inv-btn" onclick="toast('Delete coming soon!')">🗑️</button></div>
+    </div>`).join('');
+}
+
+function renderNfList(){
+  const p=NOTIFS.filter(n=>!n.done).length;
+  document.getElementById('nfCnt').textContent=p+' pending';
+  document.getElementById('nfList').innerHTML=NOTIFS.map((n,i)=>`
+    <div class="nf-item">
+      <div class="nf-dot" style="background:${n.done?'var(--green)':'var(--amber)'}"></div>
+      <div style="flex:1">
+        <div class="nf-med">${n.med}</div>
+        <div class="nf-cust">${n.cust}</div>
+        <a class="nf-ph" href="tel:${n.phone}">📞 ${n.phone}</a>
+      </div>
+      ${!n.done?`<button class="nf-done-btn" onclick="markDone(${i})">✅ Notified</button>`:`<span style="font-size:11px;font-weight:700;color:var(--green)">Done ✓</span>`}
+    </div>`).join('');
+}
+
+function markDone(i){NOTIFS[i].done=true;renderNfList();}
+
+function handleUp(inp){
+  if(!inp.files[0])return;
+  const bar=document.getElementById('progBar'),fill=document.getElementById('progFill'),res=document.getElementById('upRes');
+  bar.style.display='block';res.style.display='none';
+  let w=0;const iv=setInterval(()=>{
+    w+=Math.random()*18;
+    if(w>=100){w=100;clearInterval(iv);
+      setTimeout(()=>{
+        bar.style.display='none';
+        const tot=Math.floor(Math.random()*2000)+1000;
+        document.getElementById('rTot').textContent=tot;
+        document.getElementById('rAdd').textContent=Math.floor(tot*.06);
+        document.getElementById('rUpd').textContent=Math.floor(tot*.93);
+        document.getElementById('rFail').textContent=Math.floor(tot*.01);
+        res.style.display='block';toast('✅ Upload complete!');
+      },300);
+    }
+    fill.style.width=w+'%';
+  },150);
+}
+
+let toastT=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(toastT);toastT=setTimeout(()=>t.style.opacity='0',2500);
+}
+
+function rotateTip(){
+  tipI=(tipI+1)%TIPS.length;
+  document.getElementById('tipEm').textContent=TIPS[tipI].e;
+  document.getElementById('tipTxt').textContent=TIPS[tipI].t;
+}
+
+// PWA
+const mf={name:"Krishna Medical Store",short_name:"Krishna Medical",start_url:".",display:"standalone",background_color:"#fff",theme_color:"#0f766e",icons:[{src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%230f766e'/%3E%3Crect x='76' y='28' width='40' height='136' rx='10' fill='white'/%3E%3Crect x='28' y='76' width='136' height='40' rx='10' fill='white'/%3E%3C/svg%3E",sizes:"192x192",type:"image/svg+xml",purpose:"any maskable"}]};
+const bl=new Blob([JSON.stringify(mf)],{type:'application/json'});
+document.getElementById('mf').href=URL.createObjectURL(bl);
+if('serviceWorker' in navigator){
+  const sw=`self.addEventListener('fetch',e=>e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)||new Response(''))));`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'}))).catch(()=>{});
+}
+
+// hardware back button
+window.addEventListener('popstate',()=>goBack());
+history.pushState({},'','');
+
+// Init
+document.getElementById('homeMeds').innerHTML=MEDS.slice(0,6).map(m=>medCard(m)).join('');
+document.getElementById('catGrid').innerHTML=CATS.map(c=>`
+  <div class="cat-card" onclick="openCat('${c.id}')" style="border-color:${c.br}">
+    <div class="cat-icon" style="background:${c.bg}">${c.em}</div>
+    <div><div class="cat-name">${c.name}</div><div class="cat-count">${MEDS.filter(m=>m.cat===c.id).length} products</div></div>
+    <div class="cat-arrow">›</div>
+  </div>`).join('');
+doSearch();
+setInterval(rotateTip,5000);
+</script>
+</body>
+</html>
